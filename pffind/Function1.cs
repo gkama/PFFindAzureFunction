@@ -28,6 +28,17 @@ namespace pffind
             dynamic _data = JsonConvert.DeserializeObject(requestBody);
             searchfor = searchfor ?? _data?.name;
 
+            //If no query parameter added
+            if (searchfor == null)
+            {
+                var response = new response()
+                {
+                    statusCode = HttpStatusCode.BadRequest.ToString(),
+                    body = "No query parameter for 'searchfor' was provided"
+                };
+                return response.body;
+            }
+
             //Search for the data
             PFFind pf = new PFFind();
             List<PFFind.result> data = await pf.Find(searchfor);
@@ -38,7 +49,6 @@ namespace pffind
                 var response = new response()
                 {
                     statusCode = HttpStatusCode.OK.ToString(),
-                    headers = new Dictionary<string, string>() { { "Access-Control-Allow-Origin", "*" } },
                     body = JsonConvert.SerializeObject(data, Formatting.Indented)
                 };
                 return response.body;
@@ -49,7 +59,6 @@ namespace pffind
                 var response = new response()
                 {
                     statusCode = HttpStatusCode.BadRequest.ToString(),
-                    headers = new Dictionary<string, string>() { { "Access-Control-Allow-Origin", "*" } },
                     body = JsonConvert.SerializeObject("No data found", Formatting.Indented)
                 };
                 return response.body;
@@ -59,7 +68,6 @@ namespace pffind
         public class response
         {
             public string statusCode { get; set; }
-            public Dictionary<string, string> headers { get; set; }
             public string body { get; set; }
         }
     }
