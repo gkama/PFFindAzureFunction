@@ -18,23 +18,19 @@ namespace pffind
     public static class Function1
     {
         [FunctionName("pffind")]
-        public static async Task<response> Run([HttpTrigger(AuthorizationLevel.Function, "get", Route = null)]HttpRequest req, TraceWriter log)
+        public static async Task<string> Run([HttpTrigger(AuthorizationLevel.Function, "get", Route = null)]HttpRequest req, TraceWriter log)
         {
             log.Info("C# HTTP trigger function processed a request.");
 
-            /*string name = req.Query["name"];
+            string searchfor = req.Query["searchfor"];
 
             string requestBody = new StreamReader(req.Body).ReadToEnd();
-            dynamic data = JsonConvert.DeserializeObject(requestBody);
-            name = name ?? data?.name;
-
-            return name != null
-                ? (ActionResult)new OkObjectResult($"Hello, {name}")
-                : new BadRequestObjectResult("Please pass a name on the query string or in the request body");*/
+            dynamic _data = JsonConvert.DeserializeObject(requestBody);
+            searchfor = searchfor ?? _data?.name;
 
             //Search for the data
             PFFind pf = new PFFind();
-            List<PFFind.data> data = await pf.Find("guarantor");
+            List<PFFind.result> data = await pf.Find(searchfor);
 
             if (data.Count >= 1)
             {
@@ -45,7 +41,7 @@ namespace pffind
                     headers = new Dictionary<string, string>() { { "Access-Control-Allow-Origin", "*" } },
                     body = JsonConvert.SerializeObject(data, Formatting.Indented)
                 };
-                return response;
+                return response.body;
             }
             else
             {
@@ -56,7 +52,7 @@ namespace pffind
                     headers = new Dictionary<string, string>() { { "Access-Control-Allow-Origin", "*" } },
                     body = JsonConvert.SerializeObject("No data found", Formatting.Indented)
                 };
-                return response;
+                return response.body;
             }
         }
 

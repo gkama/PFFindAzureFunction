@@ -12,22 +12,22 @@ namespace pffind
 {
     public class PFFind
     {
-        private List<data> Data { get; set; }
+        private List<result> Data { get; set; }
 
         //Constructor
         public PFFind()
         {
-            this.Data = new List<data>();
+            this.Data = new List<result>();
         }
 
         //Find posts on PF
-        private async Task<List<data>> GetData()
+        private async Task<List<result>> GetData()
         {
             var appSettings = "https://www.reddit.com/r/personalfinance.json";
             try
             {
                 HttpClient client = new HttpClient();
-                List<data> _Data = new List<data>();
+                List<result> _Data = new List<result>();
                 string response = await client.GetStringAsync(appSettings);
 
                 //Serialize the json and loop through it
@@ -38,7 +38,6 @@ namespace pffind
                     {
                         data _data = new data()
                         {
-                            id = obj.data.id,
                             title = obj.data.title,
                             score = obj.data.score,
                             url = obj.data.url,
@@ -46,7 +45,12 @@ namespace pffind
                             subreddit_id = obj.data.subreddit_id,
                             selftext = obj.data.selftext
                         };
-                        _Data.Add(_data);
+                        result _child = new result()
+                        {
+                            id = obj.data.id,
+                            data = _data
+                        };
+                        _Data.Add(_child);
                     }
                 }
                 return _Data;
@@ -55,20 +59,20 @@ namespace pffind
         }
 
 
-        public async Task<List<data>> Find(string searchFor)
+        public async Task<List<result>> Find(string searchFor)
         {
-            List<data> toReturn = new List<data>();
+            List<result> toReturn = new List<result>();
             this.Data = await this.GetData();
             if (this.Data.Count == 0) return toReturn;
-            foreach (data d in this.Data)
+            foreach (result r in this.Data)
             {
                 //If the title contains what we are looking for
                 //Instantly store it
-                if (d.title.Contains(searchFor.ToLower(), StringComparison.CurrentCultureIgnoreCase))
-                    toReturn.Add(d);
+                if (r.data.title.Contains(searchFor.ToLower(), StringComparison.CurrentCultureIgnoreCase))
+                    toReturn.Add(r);
                 //Else if does not, check the text itself
-                else if (d.selftext.Contains(searchFor.ToLower(), StringComparison.CurrentCultureIgnoreCase))
-                    toReturn.Add(d);
+                else if (r.data.selftext.Contains(searchFor.ToLower(), StringComparison.CurrentCultureIgnoreCase))
+                    toReturn.Add(r);
             }
             return toReturn;
         }
@@ -77,15 +81,20 @@ namespace pffind
         public override string ToString()
         {
             StringBuilder toReturn = new StringBuilder();
-            foreach (data d in this.Data)
-                toReturn.Append(string.Format("found {0}", d.id)).Append("/r/n");
+            foreach (result r in this.Data)
+                toReturn.Append(string.Format("found {0}", r.id)).Append("/r/n");
 
             return string.IsNullOrEmpty(toReturn.ToString()) ? toReturn.ToString() : "";
         }
 
-        public class data
+
+        public class result
         {
             public string id { get; set; }
+            public data data { get; set; }
+        }
+        public class data
+        {
             public string title { get; set; }
             public int score { get; set; }
             public string url { get; set; }
@@ -99,7 +108,7 @@ namespace pffind
                 set
                 {
                     //Set only first 1000 characters
-                    this._selfText = value.Length <= 1000 ? value : value.Substring(0, 1000);
+                    this._selfText = value.Length <= 1000 ? value : value.Substring(0, 1000) + "...";
                     this._selfText = this._selfText.Contains("\n\n") ? this._selfText.Replace("\n\n", " ") : this._selfText;
                 }
             }
