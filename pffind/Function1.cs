@@ -41,6 +41,7 @@ namespace pffind
 
             //Search for the data
             PFFind pf = new PFFind();
+            Four01k four01k = new Four01k(UnitTest.Four01k());
             List<PFFind.result> data = await pf.Find(searchfor);
 
             if (data.Count >= 1)

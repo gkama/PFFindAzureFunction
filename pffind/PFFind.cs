@@ -38,6 +38,7 @@ namespace pffind
                     {
                         data _data = new data()
                         {
+                            id = obj.data.id,
                             title = obj.data.title,
                             score = obj.data.score,
                             url = obj.data.url,
@@ -95,6 +96,7 @@ namespace pffind
         }
         public class data
         {
+            public string id { get; set; }
             public string title { get; set; }
             public int score { get; set; }
             public string url { get; set; }
